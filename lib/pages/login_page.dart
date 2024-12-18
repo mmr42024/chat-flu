@@ -1,8 +1,11 @@
+import 'package:chat/helpers/show_custom_alert.dart';
+import 'package:chat/services/auth_service.dart';
 import 'package:chat/widgets/custom_button.dart';
 import 'package:chat/widgets/custom_input.dart';
 import 'package:chat/widgets/labels.dart';
 import 'package:chat/widgets/logo.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -68,13 +71,33 @@ class __FormState extends State<_Form> {
             isPassword: true,
             textController: passwordController,
           ),
-          CustomButton(
-            text: 'Sign In',
-            backgroundColorButton: Colors.blue,
-            textColorButton: Colors.white,
-            onPressed: () => print(
-                'Valores: ${emailController.text}, ${passwordController.text}'),
-          ),
+          Consumer<AuthServiceNotifier>(
+            builder: (context, authService, child) {
+              return CustomButton(
+                text: 'Sign In',
+                backgroundColorButton: Colors.blue,
+                textColorButton: Colors.white,
+                onPressed: authService.isLoading
+                    ? null
+                    : () async {
+                        FocusScope.of(context).unfocus();
+
+                        final loginStatus = await context
+                            .read<AuthServiceNotifier>()
+                            .login(emailController.text.trim(),
+                                passwordController.text);
+
+                        if (loginStatus && context.mounted) {
+                          //TODO Connect to our socket serve
+                          Navigator.pushReplacementNamed(context, 'users');
+                        } else if (context.mounted) {
+                          showCustomAlert(context, 'Login incorrecto',
+                              'Revise sus credenciales nuveamente.');
+                        }
+                      },
+              );
+            },
+          )
         ],
       ),
     );

@@ -1,4 +1,6 @@
+import 'package:chat/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -16,17 +18,20 @@ class _UsersPageState extends State<UsersPage> {
       RefreshController(initialRefresh: false);
 
   final users = [
-    User(online: true, email: 'kev@gmail.com', name: 'Kevin', uuid: '1'),
-    User(online: false, email: 'mau@gmail.com', name: 'Mauricio', uuid: '2'),
-    User(online: true, email: 'and@gmail.com', name: 'Andres', uuid: '3'),
+    User(online: true, email: 'kev@gmail.com', name: 'Kevin', uid: '1'),
+    User(online: false, email: 'mau@gmail.com', name: 'Mauricio', uid: '2'),
+    User(online: true, email: 'and@gmail.com', name: 'Andres', uid: '3'),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthServiceNotifier>(context);
+    final user = authService.user;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Mi nombre',
+          user?.name ?? 'Sin Nombre',
           style: TextStyle(
             color: Colors.black,
           ),
@@ -34,7 +39,12 @@ class _UsersPageState extends State<UsersPage> {
         elevation: 1,
         backgroundColor: Colors.white,
         leading: IconButton(
-          onPressed: () {},
+          onPressed: () async {
+            //TODO Desconnect the socket server.
+
+            await AuthServiceNotifier.deleteToken();
+            Navigator.pushReplacementNamed(context, 'login');
+          },
           icon: Icon(Icons.exit_to_app),
         ),
         actions: [
